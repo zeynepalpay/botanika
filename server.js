@@ -281,6 +281,40 @@ app.post('/api/plants/:id/water', authenticateToken, (req, res) => {
     });
 });
 
+// Bitkinin sulama geçmişini getirir 
+app.get('/api/plants/:id/history', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    
+    // Önce bu bitki gerçekten bu kullanıcıya mı ait kontrol edelim
+    db.get(`SELECT id FROM Plants WHERE id = ? AND user_id = ?`, [id, req.userId], (err, plant) => {
+        if (err || !plant) return res.status(404).json({ error: 'Bitki bulunamadı veya yetkiniz yok.' });
+
+        // Bitki kullanıcıya aitse logları çekelim
+        db.all(
+            `SELECT sulama_tarihi FROM WateringLogs WHERE bitki_id = ? ORDER BY id DESC`,
+            [id],
+            (err, rows) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json(rows || []);
+            }
+        );
+    });
+});
+
+//  GEÇMİŞ TABLOSUNUN VARLIĞINI GARANTİ ALTINA ALMA (Açılışta otomatik kontrol eder)
+db.run(`CREATE TABLE IF NOT EXISTS WateringLogs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bitki_id INTEGER,
+    sulama_tarihi TEXT,
+    FOREIGN KEY(bitki_id) REFERENCES Plants(id) ON DELETE CASCADE
+)`, (err) => {
+    if (err) {
+        console.error("❌ WateringLogs tablosu oluşturulurken hata:", err.message);
+    } else {
+        console.log("🗄️ WateringLogs tablosu hazır ve kontrol edildi.");
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`==================================================`);
     console.log(`🚀 Botanika Sunucusu kusursuz sekilde calisiyor!`);

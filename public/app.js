@@ -125,6 +125,17 @@ async function fetchPlants() {
 
 function renderPlants() {
     plantsContainer.innerHTML = '';
+
+   //  Dashboard Sayılarını Hesapla ve Güncelle 
+    const totalCount = allPlants.length;
+    const acilCount = allPlants.filter(p => p.durum === 'Acil' || p.durum === 'acil').length;
+    
+    // Hem 'Sağlıklı' hem 'Saglikli' kelimelerini yakalaması için esnettik
+    const saglikliCount = allPlants.filter(p => p.durum === 'Sağlıklı' || p.durum === 'Saglikli' || p.durum === 'sağlıklı').length;
+
+    document.getElementById('dashTotal').innerText = totalCount;
+    document.getElementById('dashAcil').innerText = acilCount;
+    document.getElementById('dashSaglikli').innerText = saglikliCount;
     
     const filteredPlants = allPlants.filter(plant => {
         if (currentFilter === 'Tümü') return true;
@@ -149,9 +160,9 @@ function renderPlants() {
             badgeClass = 'badge-yakin';
             statusIcon = 'fa-clock';
         }
-        
+
 const cardHtml = `
-            <div class="col">
+          <div class="col">
                 <div class="card h-100 shadow-sm plant-card bg-white">
                     <div class="card-body p-4 d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -161,7 +172,7 @@ const cardHtml = `
                             </span>
                         </div>
                         <h6 class="text-muted mb-3 small"><i class="fa-solid fa-dna me-1 text-secondary"></i> Tür: ${plant.tur}</h6>
-                        <p class="card-text text-secondary small mb-3">${plant.aciklama || '<i>Açıklama eklenmemiş.</i>'}</p>
+                        <p class="card-text text-secondary small flex-grow-1 mb-3">${plant.aciklama || '<i>Açıklama eklenmemiş.</i>'}</p>
                         
                         <div class="bg-light p-3 rounded-3 mb-2 small text-muted border-0">
                             <div class="mb-2"><i class="fa-solid fa-calendar-day me-2 text-success"></i><b>Son Sulama:</b> ${plant.son_sulama_tarihi}</div>
@@ -178,6 +189,9 @@ const cardHtml = `
                         <div class="d-flex gap-2 mt-auto">
                             <button class="btn btn-success btn-sm w-100 fw-bold py-2 rounded-pill shadow-sm" onclick="waterPlant(${plant.id})">
                                 <i class="fa-solid fa-droplet me-1"></i> Suladım
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm rounded-circle px-3" onclick="showHistory(${plant.id})" title="Sulama Geçmişi">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
                             </button>
                             <button class="btn btn-outline-danger btn-sm rounded-circle px-3" onclick="deletePlant(${plant.id})">
                                 <i class="fa-solid fa-trash"></i>
@@ -260,6 +274,50 @@ async function deletePlant(id) {
         }
     } catch (err) {
         alert('Bağlantı hatası.');
+    }
+}
+
+// SAYFA YENİLEMEDEN GEÇMİŞİ GETİRİR VE MODAL İÇİNDE GÖSTERİR 
+async function showHistory(id) {
+    const listEl = document.getElementById('historyList');
+    listEl.innerHTML = '<li class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Yükleniyor...</li>';
+    
+    // HTML'deki modal elementini JavaScript ile yakalıyoruz
+    const modalElement = document.getElementById('historyModal');
+    if (!modalElement) {
+        console.error("Hata: index.html içinde historyModal bulunamadı!");
+        return;
+    }
+
+    // Bootstrap modalını güvenli bir şekilde tetikliyoruz
+    let myModal = bootstrap.Modal.getInstance(modalElement);
+    if (!myModal) {
+        myModal = new bootstrap.Modal(modalElement);
+    }
+    myModal.show();
+
+    try {
+        
+        const response = await fetch(`/api/plants/${id}/history`, {
+            headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const logs = await response.json();
+        
+        listEl.innerHTML = '';
+        if (!logs || logs.length === 0) {
+            listEl.innerHTML = '<li class="text-center text-muted py-3"><i class="fa-solid fa-circle-info text-secondary mb-1"></i><br>Henüz sulama kaydı yok.</li>';
+            return;
+        }
+        
+        logs.forEach(log => {
+            listEl.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2 border-bottom border-light">
+                    <span><i class="fa-solid fa-droplet text-info me-2"></i>Sulamam gerçekleşti</span>
+                    <span class="badge bg-light text-dark border font-monospace">${log.sulama_tarihi}</span>
+                </li>`;
+        });
+    } catch (err) {
+        listEl.innerHTML = '<li class="text-danger text-center py-2">Veriler yüklenirken hata oluştu!</li>';
     }
 }
 
