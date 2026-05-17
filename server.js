@@ -28,7 +28,6 @@ const swaggerOptions = {
             description: 'Ev bitkilerinin envanterini tutan ve sulama durumlarını hesaplayan RESTful API sistemi.',
         },
         servers: [{ url: `http://localhost:${PORT}` }],
-    
         paths: {
             '/api/auth/register': {
                 post: {
@@ -135,10 +134,20 @@ const swaggerOptions = {
                         200: { description: 'Bitki başarıyla sulandı' }
                     }
                 }
+            },
+            '/api/plants/history/{logId}': {
+                delete: {
+                    summary: 'Yanlışlıkla eklenen sulama kaydını siler',
+                    parameters: [{ in: 'path', name: 'logId', required: true, schema: { type: 'integer' } }],
+                    responses: {
+                        200: { description: 'Kayıt başarıyla silindi' },
+                        404: { description: 'Kayıt bulunamadı' }
+                    }
+                }
             }
         }
     },
-    apis: [], 
+    apis: [],
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
@@ -159,7 +168,7 @@ function authenticateToken(req, res, next) {
 }
 
 // -------------------------------------------------------------------------
-// ROUTE'LAR VE BACKEND MANTIĞI
+// ROUTE'LAR
 // -------------------------------------------------------------------------
 
 app.post('/api/auth/register', async (req, res) => {
@@ -167,7 +176,6 @@ app.post('/api/auth/register', async (req, res) => {
     if (!kullanici_adi || !sifre) {
         return res.status(400).json({ error: 'Kullanıcı adı ve şifre zorunludur.' });
     }
-
     try {
         const hashedPassword = await bcrypt.hash(sifre, 10);
         db.run(
@@ -185,13 +193,10 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', (req, res) => {
     const { kullanici_adi, sifre } = req.body;
-
     db.get(`SELECT * FROM Users WHERE kullanici_adi = ?`, [kullanici_adi], async (err, user) => {
         if (err || !user) return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı.' });
-
         const isMatch = await bcrypt.compare(sifre, user.sifre);
         if (!isMatch) return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı.' });
-
         const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
         res.json({ token, kullanici_adi: user.kullanici_adi });
     });
@@ -200,29 +205,56 @@ app.post('/api/auth/login', (req, res) => {
 app.get('/api/plants', authenticateToken, (req, res) => {
     db.all(`SELECT * FROM Plants WHERE user_id = ?`, [req.userId], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-
         const processedPlants = rows.map(plant => {
             const info = calculatePlantStatus(plant.son_sulama_tarihi, plant.sulama_periyodu);
-            return {
-                ...plant,
-                kalan_gun: info.daysLeft,
-                durum: info.status
-            };
+            return { ...plant, kalan_gun: info.daysLeft, durum: info.status };
         });
         res.json(processedPlants);
     });
 });
 
+// ÖNEMLİ: /history route'u /:id route'larından ÖNCE tanımlanmalı
+app.delete('/api/plants/history/:logId', authenticateToken, (req, res) => {
+    const { logId } = req.params;
+    db.get(
+        `SELECT wl.id FROM WateringLogs wl 
+         JOIN Plants p ON wl.bitki_id = p.id 
+         WHERE wl.id = ? AND p.user_id = ?`,
+        [logId, req.userId],
+        (err, row) => {
+            if (err || !row) return res.status(404).json({ error: 'Kayıt bulunamadı veya yetkiniz yok.' });
+            db.run(`DELETE FROM WateringLogs WHERE id = ?`, [logId], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                if (this.changes === 0) return res.status(404).json({ error: 'Silinecek kayıt bulunamadı.' });
+                res.json({ message: 'Hatalı sulama kaydı başarıyla silindi.' });
+            });
+        }
+    );
+});
+
+app.get('/api/plants/:id/history', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    db.get(`SELECT id FROM Plants WHERE id = ? AND user_id = ?`, [id, req.userId], (err, plant) => {
+        if (err || !plant) return res.status(404).json({ error: 'Bitki bulunamadı veya yetkiniz yok.' });
+        db.all(
+            `SELECT wl.id, wl.sulama_tarihi FROM WateringLogs wl WHERE wl.bitki_id = ? ORDER BY wl.id DESC`,
+            [id],
+            (err, rows) => {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json(rows || []);
+            }
+        );
+    });
+});
+
 app.post('/api/plants', authenticateToken, (req, res) => {
     const { isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu, son_sulama_tarihi } = req.body;
-
     if (!isim || !tur || !sulama_periyodu || !son_sulama_tarihi) {
         return res.status(400).json({ error: 'Gerekli alanları doldurunuz.' });
     }
     if (Number(sulama_periyodu) <= 0) {
         return res.status(400).json({ error: 'Sulama periyodu 0 veya daha küçük olamaz.' });
     }
-
     db.run(
         `INSERT INTO Plants (user_id, isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu, son_sulama_tarihi) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -237,11 +269,9 @@ app.post('/api/plants', authenticateToken, (req, res) => {
 app.put('/api/plants/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     const { isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu } = req.body;
-
     if (sulama_periyodu && Number(sulama_periyodu) <= 0) {
         return res.status(400).json({ error: 'Sulama periyodu 0 veya daha küçük olamaz.' });
     }
-
     db.run(
         `UPDATE Plants SET isim = ?, tur = ?, aciklama = ?, toprak_bakimi = ?, ilaclama_notu = ?, asilama_durumu = ?, sulama_periyodu = ? 
          WHERE id = ? AND user_id = ?`,
@@ -266,13 +296,10 @@ app.delete('/api/plants/:id', authenticateToken, (req, res) => {
 app.post('/api/plants/:id/water', authenticateToken, (req, res) => {
     const { id } = req.params;
     const bugunISO = new Date().toISOString().split('T')[0];
-
     db.get(`SELECT id FROM Plants WHERE id = ? AND user_id = ?`, [id, req.userId], (err, plant) => {
         if (err || !plant) return res.status(404).json({ error: 'Bitki bulunamadı veya yetkiniz yok.' });
-
         db.run(`UPDATE Plants SET son_sulama_tarihi = ? WHERE id = ?`, [bugunISO, id], function(err) {
             if (err) return res.status(500).json({ error: err.message });
-
             db.run(`INSERT INTO WateringLogs (bitki_id, sulama_tarihi) VALUES (?, ?)`, [id, bugunISO], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 res.json({ message: 'Bitki başarıyla sulandı ve geçmişe kaydedildi.', son_sulama_tarihi: bugunISO });
@@ -281,49 +308,7 @@ app.post('/api/plants/:id/water', authenticateToken, (req, res) => {
     });
 });
 
-// Bitkinin sulama geçmişini getirir 
-app.get('/api/plants/:id/history', authenticateToken, (req, res) => {
-    const { id } = req.params;
-    
-    // Önce bu bitki gerçekten bu kullanıcıya mı ait kontrol edelim
-    db.get(`SELECT id FROM Plants WHERE id = ? AND user_id = ?`, [id, req.userId], (err, plant) => {
-        if (err || !plant) return res.status(404).json({ error: 'Bitki bulunamadı veya yetkiniz yok.' });
-
-        // Bitki kullanıcıya aitse logları çekelim
-        db.all(
-            `SELECT id, sulama_tarihi FROM WateringLogs WHERE bitki_id = ? ORDER BY id DESC`,
-            [id],
-            (err, rows) => {
-                if (err) return res.status(500).json({ error: err.message });
-                res.json(rows || []);
-            }
-        );
-    });
-});
-
-//  YANLIŞLIKLA EKLENEN SULAMA KAYDINI GEÇMİŞTEN SİLER
-app.delete('/api/plants/history/:logId', authenticateToken, (req, res) => {
-    const { logId } = req.params;
-
-    // Güvenlik doğrulaması: Silinmek istenen log gerçekten bu kullanıcının bitkisine mi ait?
-    db.get(
-        `SELECT wl.id FROM WateringLogs wl 
-         JOIN Plants p ON wl.bitki_id = p.id 
-         WHERE wl.id = ? AND p.user_id = ?`,
-         [logId, req.userId],
-         (err, row) => {
-             if (err || !row) return res.status(404).json({ error: 'Kayıt bulunamadı veya yetkiniz yok.' });
-
-             // Her şey doğruysa kaydı tablodan silelim
-             db.run(`DELETE FROM WateringLogs WHERE id = ?`, [logId], function(err) {
-                 if (err) return res.status(500).json({ error: err.message });
-                 res.json({ message: 'Hatalı sulama kaydı başarıyla silindi.' });
-             });
-         }
-    );
-});
-
-//  GEÇMİŞ TABLOSUNUN VARLIĞINI GARANTİ ALTINA ALMA (Açılışta otomatik kontrol eder)
+// GEÇMİŞ TABLOSUNUN VARLIĞINI GARANTİ ALTINA ALMA
 db.run(`CREATE TABLE IF NOT EXISTS WateringLogs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     bitki_id INTEGER,

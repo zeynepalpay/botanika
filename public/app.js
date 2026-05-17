@@ -88,10 +88,9 @@ logoutBtn.addEventListener('click', () => {
     checkAuth();
 });
 
-// Görünüm Ayarları
 function checkAuth() {
     if (currentToken) {
-        authPanel.setAttribute('style', 'display: none !important;'); // Giriş formunu tamamen yok et
+        authPanel.setAttribute('style', 'display: none !important;');
         mainPanel.classList.remove('d-none');
         welcomeText.classList.remove('d-none');
         logoutBtn.classList.remove('d-none');
@@ -106,7 +105,7 @@ function checkAuth() {
     }
 }
 
-// --- 🌿  BİTKİ YÖNETİMİ ---
+// --- 🌿 BİTKİ YÖNETİMİ ---
 async function fetchPlants() {
     try {
         const response = await fetch(`${API_URL}/plants`, {
@@ -126,11 +125,8 @@ async function fetchPlants() {
 function renderPlants() {
     plantsContainer.innerHTML = '';
 
-   //  Dashboard Sayılarını Hesapla ve Güncelle 
     const totalCount = allPlants.length;
     const acilCount = allPlants.filter(p => p.durum === 'Acil' || p.durum === 'acil').length;
-    
-    // Hem 'Sağlıklı' hem 'Saglikli' kelimelerini yakalaması için esnettik
     const saglikliCount = allPlants.filter(p => p.durum === 'Sağlıklı' || p.durum === 'Saglikli' || p.durum === 'sağlıklı').length;
 
     document.getElementById('dashTotal').innerText = totalCount;
@@ -161,7 +157,7 @@ function renderPlants() {
             statusIcon = 'fa-clock';
         }
 
-const cardHtml = `
+        const cardHtml = `
           <div class="col">
                 <div class="card h-100 shadow-sm plant-card bg-white">
                     <div class="card-body p-4 d-flex flex-column">
@@ -205,7 +201,6 @@ const cardHtml = `
     });
 }
 
-// SAYFA YENİLEMEDEN ANINDA EKLEME
 document.getElementById('plantForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -232,8 +227,7 @@ document.getElementById('plantForm').addEventListener('submit', async (e) => {
             const modalEl = document.getElementById('addPlantModal');
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             modalInstance.hide();
-            
-            fetchPlants(); // SAYFA YENİLENMEDEN VERİLER ANINDA YENİDEN ÇEKİLİR VE EKRAN GÜNCELLENİR
+            fetchPlants();
         } else {
             const data = await response.json();
             alert(data.error || 'Hata oluştu.');
@@ -243,23 +237,20 @@ document.getElementById('plantForm').addEventListener('submit', async (e) => {
     }
 });
 
-// SAYFA YENİLEMEDEN ANINDA SULAMA
 async function waterPlant(id) {
     try {
         const response = await fetch(`${API_URL}/plants/${id}/water`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
-
         if (response.ok) {
-            fetchPlants(); // SAYFA YENİLENMEDEN KARTTAKİ KALAN GÜN SAYISI ANINDA DEĞİŞİR
+            fetchPlants();
         }
     } catch (err) {
         alert('Bağlantı hatası.');
     }
 }
 
-// SAYFA YENİLEMEDEN ANINDA SİLME
 async function deletePlant(id) {
     if (!confirm('Bu bitkiyi silmek istediğinize emin misiniz?')) return;
 
@@ -268,52 +259,48 @@ async function deletePlant(id) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
-
         if (response.ok) {
-            fetchPlants(); // SAYFA YENİLENMEDEN KART EKRANDAN ANINDA KAYBOLUR
+            fetchPlants();
         }
     } catch (err) {
         alert('Bağlantı hatası.');
     }
 }
 
-// SAYFA YENİLEMEDEN GEÇMİŞİ GETİRİR VE MODAL İÇİNDE GÖSTERİR 
-async function showHistory(id) {
+async function showHistory(plantId) {
     const listEl = document.getElementById('historyList');
     listEl.innerHTML = '<li class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Yükleniyor...</li>';
     
-    // HTML'deki modal elementini JavaScript ile yakalıyoruz
     const modalElement = document.getElementById('historyModal');
-    if (!modalElement) {
-        console.error("Hata: index.html içinde historyModal bulunamadı!");
-        return;
-    }
+    if (!modalElement) return;
 
-    // Bootstrap modalını güvenli bir şekilde tetikliyoruz
     let myModal = bootstrap.Modal.getInstance(modalElement);
-    if (!myModal) {
-        myModal = new bootstrap.Modal(modalElement);
-    }
+    if (!myModal) { myModal = new bootstrap.Modal(modalElement); }
     myModal.show();
 
     try {
-        
-        const response = await fetch(`/api/plants/${id}/history`, {
+        const response = await fetch(`${API_URL}/plants/${plantId}/history`, {
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
         const logs = await response.json();
         
         listEl.innerHTML = '';
         if (!logs || logs.length === 0) {
-            listEl.innerHTML = '<li class="text-center text-muted py-3"><i class="fa-solid fa-circle-info text-secondary mb-1"></i><br>Henüz sulama kaydı yok.</li>';
+            listEl.innerHTML = '<li class="text-center text-muted py-3">Henüz sulama kaydı yok.</li>';
             return;
         }
         
-        logs.forEach(log => {
+        logs.forEach((log) => {
+            const logId = log.id;
             listEl.innerHTML += `
                 <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-2 border-bottom border-light">
                     <span><i class="fa-solid fa-droplet text-info me-2"></i>Sulamam gerçekleşti</span>
-                    <span class="badge bg-light text-dark border font-monospace">${log.sulama_tarihi}</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light text-dark border font-monospace">${log.sulama_tarihi}</span>
+                        <button class="btn btn-link text-danger p-0 lh-1" onclick="deleteHistoryLog(${logId}, ${plantId})" title="Bu kaydı sil">
+                            <i class="fa-solid fa-trash-can small"></i>
+                        </button>
+                    </div>
                 </li>`;
         });
     } catch (err) {
@@ -321,13 +308,39 @@ async function showHistory(id) {
     }
 }
 
-// FİLTRELEME BUTONLARI TETİKLEYİCİSİ
+async function deleteHistoryLog(logId, plantId) {
+    if (!logId) {
+        alert('Log ID bulunamadı!');
+        return;
+    }
+    
+    if (!confirm('Bu sulama kaydını silmek istediğinize emin misiniz?')) return;
+
+    try {
+        const response = await fetch(`${API_URL}/plants/history/${logId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            showHistory(plantId);
+            fetchPlants(); 
+        } else {
+            alert('Kayıt silinemedi: ' + (result.error || 'Bilinmeyen hata'));
+        }
+    } catch (err) {
+        console.error('Silme hatası:', err);
+    }
+}
+
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
         currentFilter = e.currentTarget.getAttribute('data-filter');
-        renderPlants(); // SAYFA YENİLENMEDEN KARTLAR ANINDA FİLTRELENİR
+        renderPlants(); 
     });
 });
 
