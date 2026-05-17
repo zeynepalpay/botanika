@@ -291,7 +291,7 @@ app.get('/api/plants/:id/history', authenticateToken, (req, res) => {
 
         // Bitki kullanıcıya aitse logları çekelim
         db.all(
-            `SELECT sulama_tarihi FROM WateringLogs WHERE bitki_id = ? ORDER BY id DESC`,
+            `SELECT id, sulama_tarihi FROM WateringLogs WHERE bitki_id = ? ORDER BY id DESC`,
             [id],
             (err, rows) => {
                 if (err) return res.status(500).json({ error: err.message });
@@ -299,6 +299,28 @@ app.get('/api/plants/:id/history', authenticateToken, (req, res) => {
             }
         );
     });
+});
+
+//  YANLIŞLIKLA EKLENEN SULAMA KAYDINI GEÇMİŞTEN SİLER
+app.delete('/api/plants/history/:logId', authenticateToken, (req, res) => {
+    const { logId } = req.params;
+
+    // Güvenlik doğrulaması: Silinmek istenen log gerçekten bu kullanıcının bitkisine mi ait?
+    db.get(
+        `SELECT wl.id FROM WateringLogs wl 
+         JOIN Plants p ON wl.bitki_id = p.id 
+         WHERE wl.id = ? AND p.user_id = ?`,
+         [logId, req.userId],
+         (err, row) => {
+             if (err || !row) return res.status(404).json({ error: 'Kayıt bulunamadı veya yetkiniz yok.' });
+
+             // Her şey doğruysa kaydı tablodan silelim
+             db.run(`DELETE FROM WateringLogs WHERE id = ?`, [logId], function(err) {
+                 if (err) return res.status(500).json({ error: err.message });
+                 res.json({ message: 'Hatalı sulama kaydı başarıyla silindi.' });
+             });
+         }
+    );
 });
 
 //  GEÇMİŞ TABLOSUNUN VARLIĞINI GARANTİ ALTINA ALMA (Açılışta otomatik kontrol eder)
