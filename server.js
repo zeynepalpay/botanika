@@ -308,27 +308,34 @@ app.post('/api/plants/:id/water', authenticateToken, (req, res) => {
     });
 });
 
-//  BAKIM GÜNCELLEME KAPISI
+//  BİTKİLERİN BAKIM TARİHLERİNİ (TOPRAK, İLAÇ, AŞI) GÜNCELLEYEN API KAPISI
 app.put('/api/plants/:id/care', authenticateToken, (req, res) => {
+    // URL'den bitki id'si, istek gövdesinden (body) ise bakım tipi ve seçilen tarih alınır
     const { id } = req.params;
     const { careType, date } = req.body;
 
-    let columnName = '';
-    if (careType === 'toprak') columnName = 'toprak_bakimi';
-    else if (careType === 'ilac') columnName = 'ilaclama_notu';
-    else if (careType === 'asi') columnName = 'asilama_durumu';
+    //  İş mantığı (business logic) route içinde tutulmaz.
+    // Gelen bakım tipinin veritabanında hangi sütuna denk geldiği utils.js katmanına sorulur.
+    const { getColumnNameByCareType } = require('./utils');
+    const columnName = getColumnNameByCareType(careType);
 
+    // Utils katmanından null döndüyse, yani geçersiz bir bakım tipi geldiyse 400 hatası döndürülür
     if (!columnName) {
         return res.status(400).json({ error: 'Geçersiz bakım tipi!' });
     }
 
-    // Güvenlik: Bitkinin gerçekten bu kullanıcıya ait olup olmadığını kontrol ederek güncelliyoruz
+    // Veritabanında ilgili bitki id'si ve oturumu açan kullanıcının id'si kontrol edilerek güncelleme yapılır
     db.run(
         `UPDATE Plants SET ${columnName} = ? WHERE id = ? AND user_id = ?`,
         [date, id, req.userId],
         function(err) {
+            // Veritabanı hatası oluşursa 500 hata kodu ile yanıt verilir
             if (err) return res.status(500).json({ error: err.message });
+            
+            // Eğer hiçbir satır güncellenmediyse bitkinin bulunamadığı veya yetkinin olmadığı belirtilir
             if (this.changes === 0) return res.status(404).json({ error: 'Bitki bulunamadı veya yetkiniz yok.' });
+            
+            // İşlem başarılı ise yanıt JSON formatında frontend katmanına iletilir
             res.json({ message: 'Bakım tarihi başarıyla güncellendi!' });
         }
     );

@@ -1,39 +1,57 @@
-// utils.js - İş Mantığı (Business Logic) Katmanı
+// utils.js - Projenin Hesaplama ve İş Mantığı (Business Logic) Katmanı
 
 /**
- * Son sulama tarihine ve periyoda bakarak kalan günü ve bitki durumunu hesaplar.
- * @param {string} lastWateredDate - "YYYY-MM-DD" formatında son sulama tarihi
- * @param {number} periodDays - Kaç günde bir sulanması gerektiği
- * @returns {object} { daysLeft: sayı, status: "Saglikli"|"Yakin"|"Acil" }
+ * Son sulama tarihine ve periyoda bakarak kalan günü ve bitki durumunu hesaplayan fonksiyon.
+ * @param {string} lastWateredDate - "YYYY-MM-DD" formatında gelen son sulama tarihi
+ * @param {number} periodDays - Bitkinin kaç günde bir sulanması gerektiği (periyot)
  */
 function calculatePlantStatus(lastWateredDate, periodDays) {
     const lastWatered = new Date(lastWateredDate);
     const today = new Date();
 
-    // Saat farklarından dolayı yanlış hesap yapmamak için saatleri sıfırlıyoruz
+    // Saat farklarından dolayı gün hesabında hata oluşmaması için saatler sıfırlanır
     lastWatered.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
 
-    // Bir sonraki sulama tarihini buluyoruz (Son sulama + Periyot)
+    // Bir sonraki sulama tarihi hesaplanır (Son sulama gününe periyot eklenir)
     const nextWateringDate = new Date(lastWatered);
     nextWateringDate.setDate(lastWatered.getDate() + periodDays);
 
-    // İki tarih arasındaki milisaniye farkını güne çeviriyoruz
+    // İki tarih arasındaki milisaniye farkı alınarak matematiksel olarak güne çevrilir
     const timeDiff = nextWateringDate.getTime() - today.getTime();
     const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    // Durum kontrolü (Badge/Rozet Mantığı)
     let status = "Saglikli"; 
     
+    // Orijinal Matematiksel Mantık: Kalan gün sayısına göre durum etiketi belirlenir
     if (daysLeft <= 0) {
-        status = "Acil";      // Sulama zamanı gelmiş veya geçmiş 🔴
+        status = "Acil";      // Sulama günü gelmiş veya geçmişse Acil (🔴)
     } else if (daysLeft <= 2) {
-        status = "Yakin";     // Sulamaya 1 veya 2 gün kalmış 🟡
+        status = "Yakin";     // Sulamaya 1 veya 2 gün kaldıysa Yakın (🟡)
     } else {
-        status = "Saglikli";  // Keyfi yerinde, daha vakit var 🟢
+        status = "Saglikli";  // Daha vakit varsa Sağlıklı (🟢)
     }
 
     return { daysLeft, status };
 }
 
-module.exports = { calculatePlantStatus };
+/**
+ * Frontend'den gelen bakım tipine (toprak, ilac, asi) göre veritabanındaki sütun adını eşleştiren fonksiyon.
+ * @param {string} careType - Frontend'den gelen buton tipi
+ */
+function getColumnNameByCareType(careType) {
+    if (!careType) return null;
+    
+    // Gelen kelimeye göre veritabanındaki gerçek sütun isimleri eşleştirilir
+    const types = {
+        'toprak': 'toprak_bakimi',
+        'ilac': 'ilaclama_notu',
+        'asi': 'asilama_durumu'
+    };
+    
+    // Listede eşleşme varsa sütun adı döndürülür, yoksa null fırlatılır
+    return types[careType] || null;
+}
+
+// Fonksiyonlar dışarı aktarılır; böylece server.js ve test dosyası tarafından erişilebilir hale gelir
+module.exports = { calculatePlantStatus, getColumnNameByCareType };
