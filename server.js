@@ -147,6 +147,31 @@ const swaggerOptions = {
             }
         }
     },
+    '/api/plants/{id}/care': {
+                put: {
+                    summary: 'Bitki özel bakım tarihlerini (Toprak, İlaç, Aşı) günceller',
+                    parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'integer' } }],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        careType: { type: 'string', example: 'ilac' },
+                                        date: { type: 'string', example: '2026-05-19' }
+                                    }
+                                }
+                             }
+                        }
+                    },
+                    responses: {
+                        200: { description: 'Bakım tarihi başarıyla güncellendi' },
+                        400: { description: 'Geçersiz bakım tipi veya hatalı istek' },
+                        404: { description: 'Bitki bulunamadı veya yetkiniz yok' }
+                    }
+                }
+            },
     apis: [],
 };
 
