@@ -20,6 +20,27 @@ const toggleAuthText = document.getElementById('toggleAuthText');
 
 let isLoginMode = true;
 
+// UYGULAMA AÇILDIĞINDA TARAYICIDAN BİLDİRİM İZNİ İSTEYEN FONKSİYON
+function checkNotificationPermission() {
+    // Tarayıcı bildirim özelliğini destekliyor mu?
+    if (!("Notification" in window)) {
+        console.log("Bu tarayıcı masaüstü bildirimlerini desteklemiyor.");
+        return;
+    }
+
+    // Eğer henüz izin istenmediyse (default durumundaysa) izin iste
+    if (Notification.permission === "default") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                console.log("Bildirim izni verildi! 🎉");
+            }
+        });
+    }
+}
+
+// Fonksiyonu hemen çalıştır ki site açılır açılmaz izin kutusu gelsin
+checkNotificationPermission();
+
 // --- 🔐 OTURUM GİRİŞ / KAYIT ---
 if (switchAuthLink) {
     switchAuthLink.addEventListener('click', function toggleMode(e) {
@@ -117,6 +138,7 @@ async function fetchPlants() {
         }
         allPlants = await response.json();
         renderPlants();
+        sendWateringNotification(allPlants);
     } catch (err) {
         console.error('Veri çekme hatası:', err);
     }
@@ -345,3 +367,23 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 checkAuth();
+
+// ACİL DURUMDAKİ BİTKİLERİ KONTROL EDİP BİLDİRİM ATAN FONKSİYON
+function sendWateringNotification(plants) {
+    // Tarayıcıdan bildirim izni var mı kontrol et
+    if (Notification.permission !== "granted") return;
+
+ 
+    const acilBitkiler = plants.filter(plant => {
+        return plant.durum === "Acil" || plant.status === "Acil"; 
+    });
+
+    // Eğer acil sulanması gereken bitki varsa bildirim fırlat
+    if (acilBitkiler.length > 0) {
+        // Tek bir bildirimde kaç tane acil bitki olduğunu söyleyelim
+        new Notification("Botanika Akıllı Uyarı! 🌿", {
+            body: `Şu an sulama zamanı geçmiş ${acilBitkiler.length} adet bitkiniz var. Onları susuz bırakmayın!`,
+            icon: "https://cdn-icons-png.flaticon.com/512/628/628283.png" // Tatlı bir yaprak ikonu
+        });
+    }
+}
