@@ -199,10 +199,19 @@ function renderPlants() {
                         </div>
 
                         <div class="p-2 mb-3 rounded-3 small text-secondary bg-white border border-light-subtle">
-                            <div class="mb-1 text-truncate"><i class="fa-solid fa-mountain text-warning me-2"></i><b>Toprak:</b> ${plant.toprak_bakimi || 'Not yok'}</div>
-                            <div class="mb-1 text-truncate"><i class="fa-solid fa-spray-can text-danger me-2"></i><b>İlaçlama:</b> ${plant.ilaclama_notu || 'Not yok'}</div>
-                            <div class="text-truncate"><i class="fa-solid fa-syringe text-info me-2"></i><b>Aşılama:</b> ${plant.asilama_durumu || 'Not yok'}</div>
-                        </div>
+    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+        <span><i class="fa-solid fa-mountain text-warning me-2"></i><b>Toprak:</b> ${plant.toprak_bakimi || 'Not yok'}</span>
+        <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'toprak')" style="font-size: 11px;">🪵 Güncelle</button>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+        <span><i class="fa-solid fa-spray-can text-danger me-2"></i><b>İlaçlama:</b> ${plant.ilaclama_notu || 'Not yok'}</span>
+        <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'ilac')" style="font-size: 11px;">🧪 İlaçla</button>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-syringe text-info me-2"></i><b>Aşılama:</b> ${plant.asilama_durumu || 'Not yok'}</span>
+        <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'asi')" style="font-size: 11px;">💉 Aşıla</button>
+    </div>
+</div>
 
                         <div class="d-flex gap-2 mt-auto">
                             <button class="btn btn-success btn-sm w-100 fw-bold py-2 rounded-pill shadow-sm" onclick="waterPlant(${plant.id})">
@@ -385,5 +394,29 @@ function sendWateringNotification(plants) {
             body: `Şu an sulama zamanı geçmiş ${acilBitkiler.length} adet bitkiniz var. Onları susuz bırakmayın!`,
             icon: "https://cdn-icons-png.flaticon.com/512/628/628283.png" // Tatlı bir yaprak ikonu
         });
+    }
+}
+
+// TOPRAK, İLAÇ VE AŞI BAKIM TARİHLERİNİ ANLIK GÜNCELLEYEN ORTAK FONKSİYON
+async function updateCare(plantId, careType) {
+    const bugun = new Date().toISOString().split('T')[0]; // Bugünün tarihini YYYY-MM-DD formatında alır
+    
+    try {
+        const response = await fetch(`${API_URL}/plants/${plantId}/care`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({ careType, date: bugun })
+        });
+
+        if (response.ok) {
+            fetchPlants(); // Bilgileri yeniden çek ve kartları taze taze güncelle!
+        } else {
+            alert("Bakım tarihi güncellenirken bir hata oluştu.");
+        }
+    } catch (err) {
+        console.error("Bakım güncelleme hatası:", err);
     }
 }

@@ -308,6 +308,32 @@ app.post('/api/plants/:id/water', authenticateToken, (req, res) => {
     });
 });
 
+//  BAKIM GÜNCELLEME KAPISI
+app.put('/api/plants/:id/care', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    const { careType, date } = req.body;
+
+    let columnName = '';
+    if (careType === 'toprak') columnName = 'toprak_bakimi';
+    else if (careType === 'ilac') columnName = 'ilaclama_notu';
+    else if (careType === 'asi') columnName = 'asilama_durumu';
+
+    if (!columnName) {
+        return res.status(400).json({ error: 'Geçersiz bakım tipi!' });
+    }
+
+    // Güvenlik: Bitkinin gerçekten bu kullanıcıya ait olup olmadığını kontrol ederek güncelliyoruz
+    db.run(
+        `UPDATE Plants SET ${columnName} = ? WHERE id = ? AND user_id = ?`,
+        [date, id, req.userId],
+        function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: 'Bitki bulunamadı veya yetkiniz yok.' });
+            res.json({ message: 'Bakım tarihi başarıyla güncellendi!' });
+        }
+    );
+});
+
 // GEÇMİŞ TABLOSUNUN VARLIĞINI GARANTİ ALTINA ALMA
 db.run(`CREATE TABLE IF NOT EXISTS WateringLogs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
