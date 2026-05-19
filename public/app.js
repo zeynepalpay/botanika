@@ -179,7 +179,7 @@ function renderPlants() {
             statusIcon = 'fa-clock';
         }
 
-        const cardHtml = `
+       const cardHtml = `
           <div class="col">
                 <div class="card h-100 shadow-sm plant-card bg-white">
                     <div class="card-body p-4 d-flex flex-column">
@@ -199,19 +199,19 @@ function renderPlants() {
                         </div>
 
                         <div class="p-2 mb-3 rounded-3 small text-secondary bg-white border border-light-subtle">
-    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
-        <span><i class="fa-solid fa-mountain text-warning me-2"></i><b>Toprak:</b> ${plant.toprak_bakimi || 'Not yok'}</span>
-        <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'toprak')" style="font-size: 11px;">🪵 Güncelle</button>
-    </div>
-    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
-        <span><i class="fa-solid fa-spray-can text-danger me-2"></i><b>İlaçlama:</b> ${plant.ilaclama_notu || 'Not yok'}</span>
-        <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'ilac')" style="font-size: 11px;">🧪 İlaçla</button>
-    </div>
-    <div class="d-flex justify-content-between align-items-center">
-        <span><i class="fa-solid fa-syringe text-info me-2"></i><b>Aşılama:</b> ${plant.asilama_durumu || 'Not yok'}</span>
-        <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'asi')" style="font-size: 11px;">💉 Aşıla</button>
-    </div>
-</div>
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                <span><i class="fa-solid fa-mountain text-warning me-2"></i><b>Toprak:</b> ${plant.toprak_bakimi || ''}</span>
+                                <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'toprak')" style="font-size: 11px;">🪵 Güncelle</button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                <span><i class="fa-solid fa-spray-can text-danger me-2"></i><b>İlaçlama:</b> ${plant.ilaclama_notu || ''}</span>
+                                <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'ilac')" style="font-size: 11px;">🧪 İlaçla</button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-syringe text-info me-2"></i><b>Aşılama:</b> ${plant.asilama_durumu || ''}</span>
+                                <button type="button" class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold small" onclick="updateCare(${plant.id}, 'asi')" style="font-size: 11px;">💉 Aşıla</button>
+                            </div>
+                        </div>
 
                         <div class="d-flex gap-2 mt-auto">
                             <button class="btn btn-success btn-sm w-100 fw-bold py-2 rounded-pill shadow-sm" onclick="waterPlant(${plant.id})">
