@@ -22,9 +22,9 @@ exports.createPlant = async (req, res) => {
     if (!isim || !tur || !sulama_periyodu || !son_sulama_tarihi) {
         return res.status(400).json({ error: 'Gerekli alanları doldurunuz.' });
     }
-    if (Number(sulama_periyodu) <= 0) {
-        return res.status(400).json({ error: 'Sulama periyodu 0 veya daha küçük olamaz.' });
-    }
+    if (Number(sulama_periyodu) < 1 || Number(sulama_periyodu) > 365) {
+    return res.status(400).json({ error: 'Sulama periyodu 1 ile 365 gün arasında olmalıdır.' });
+}
 
     // 📅 Tarih Doğrulama Katmanı (Gelecek tarihleri ve hane taşmalarını engeller)
     const girilenTarih = new Date(son_sulama_tarihi);
@@ -157,9 +157,9 @@ exports.updatePlant = (req, res) => {
     const { id } = req.params;
     const { isim, tur, aciklama, sulama_periyodu } = req.body;
     
-    if (sulama_periyodu && Number(sulama_periyodu) <= 0) {
-        return res.status(400).json({ error: 'Sulama periyodu 0 veya daha küçük olamaz.' });
-    }
+   if (Number(sulama_periyodu) < 1 || Number(sulama_periyodu) > 365) {
+    return res.status(400).json({ error: 'Sulama periyodu 1 ile 365 gün arasında olmalıdır.' });
+}
     
     db.run(
         `UPDATE Plants SET isim = ?, tur = ?, aciklama = ?, sulama_periyodu = ? 

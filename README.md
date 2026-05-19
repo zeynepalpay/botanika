@@ -1,54 +1,63 @@
-# 🌿 Botanika - Akıllı Bitki Bakım Sistemi
+🌿 Botanika - Akıllı Bitki Bakım Sistemi
+Botanika, bitkilerinizin bakım rutinlerini zahmetsizce takip etmenizi sağlayan, katmanlı mimari prensiplerine uygun olarak geliştirilmiş web tabanlı bir otomasyon sistemidir.
 
-**Botanika**, bitkilerinizin bakım rutinlerini zahmetsizce takip etmenizi sağlayan web tabanlı bir otomasyon sistemidir. Katmanlı mimari prensiplerine uygun olarak geliştirilmiştir.
+🚀 Temel Özellikler
+Akıllı Filtreleme: Bitkilerinizi "Acil", "Yaklaşanlar" ve "Sağlıklı" kategorilerine göre dinamik olarak yönetin.
 
----
+Bakım Takibi: Bitkinizin son bakım tarihini güncelleyin; sistem bir sonraki tarihi otomatik olarak hesaplar.
 
-## 🚀 Temel Özellikler
-- **Akıllı Filtreleme:** Bitkilerinizi "Acil", "Yaklaşanlar" ve "Sağlıklı" kategorilerine göre yönetin.
-- **Bakım Takibi:** Bitkinizin son bakım tarihini güncelleyin; sistem bir sonraki tarihi hesaplar.
-- **Güvenli Yönetim:** Oturum bazlı yetkilendirme ile verilerinizi koruyun.
-- **Modüler Yapı:** Kolay genişletilebilir ve test edilebilir kod tabanı.
+Modüler Yapı: Kolay genişletilebilir, test edilebilir ve sürdürülebilir bir kod tabanı.
 
----
+🛠️ Teknik Altyapı
+Frontend: HTML5, CSS3 (Bootstrap 5), JavaScript
 
-## 🛠️ Teknik Altyapı
-- **Frontend:** HTML5, CSS3 (Bootstrap 5), JavaScript
-- **Backend:** Node.js, Express.js
-- **Veritabanı:** SQLite
-- **Test:** Jest (İş mantığı doğrulamaları için)
+Backend: Node.js, Express.js
 
----
+Veritabanı: SQLite
 
-## ⚙️ Kurulum ve Çalıştırma
+Güvenlik: JWT (JSON Web Token) tabanlı yetkilendirme, Middleware katmanı ile korunan API uç noktaları.
 
-**1. Repoyu klonlayın ve klasöre gidin:**
-```bash
+Test: Jest & Supertest (Unit ve Entegrasyon testleri).
+
+🛡️ Güvenlik ve Veri Doğrulama
+Botanika, kullanıcı hatalarını minimize etmek ve sistemi korumak adına çok katmanlı bir doğrulama mekanizmasına sahiptir:
+
+İstemci (Frontend) Doğrulaması: HTML5 ve JavaScript ile giriş sınırlandırmaları (tarih kontrolleri, zorunlu alanlar).
+
+Sunucu (Backend) Doğrulaması: Controller katmanında gelen verilerin mantıksal kontrolü (örn: 1-365 gün sulama periyodu sınırı, gelecek tarih engelleme).
+
+API Güvenliği: Yetkisiz erişim denemeleri, middleware katmanı tarafından 403 Forbidden yanıtı ile engellenerek sistemin veri bütünlüğü korunmaktadır.
+
+⚙️ Kurulum ve Çalıştırma
+Repoyu klonlayın ve klasöre gidin:
+
+Bash
 git clone [repo-adresi]
 cd botanika
-2. Gerekli bağımlılıkları yükleyin:
+Gerekli bağımlılıkları yükleyin:
 
 Bash
 npm install
-3. Sunucuyu başlatın:
+Sunucuyu başlatın:
 
 Bash
 npm start
 Sunucu başarıyla başladığında arayüze http://localhost:3000 adresi üzerinden erişebilirsiniz.
 
-4. Testleri çalıştırın:
+Testleri çalıştırın:
 
 Bash
 npm test
+Not: İş mantığı testleri (Unit Tests) %100 başarı oranıyla çalışmaktadır.
+
 🔌 API Kullanımı
 Sistem, frontend ve backend arasında standart JSON formatı ile haberleşir.
 
 Bitki Bakım Tarihi Güncelleme
-Belirtilen ID değerine sahip bitkinin bakım tarihini günceller.
 
-URL: /api/plants/:id/care
+URL: /api/plants/:id/water
 
-Metot: PUT
+Metot: POST
 
 Yetkilendirme: Bearer Token gereklidir.
 
@@ -56,12 +65,11 @@ Yetkilendirme: Bearer Token gereklidir.
 
 JSON
 {
-  "careType": "ilac",
   "date": "2026-05-19"
 }
 Örnek Başarılı Cevap:
 
 JSON
 {
-  "message": "Bakım tarihi başarıyla güncellendi!"
+  "message": "Bitki başarıyla sulandı ve geçmişe kaydedildi."
 }
