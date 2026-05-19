@@ -435,3 +435,16 @@ async function updateCare(plantId, careType) {
         console.error("Bakım güncelleme hatası:", err);
     }
 }
+
+// 📅 Son Sulama Tarihi için gelecek tarihlerin seçilmesini engelleme katmanı
+document.addEventListener('DOMContentLoaded', () => {
+    const sonTarihInput = document.getElementById('pSonTarih');
+    
+    if (sonTarihInput) {
+        // Bugünün tarihini YYYY-MM-DD formatında alıyoruz
+        const bugun = new Date().toISOString().split('T')[0];
+        
+        // Input'un maksimum seçilebilir tarihini bugüne sabitliyoruz
+        sonTarihInput.setAttribute('max', bugun);
+    }
+});

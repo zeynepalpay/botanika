@@ -26,6 +26,22 @@ exports.createPlant = async (req, res) => {
         return res.status(400).json({ error: 'Sulama periyodu 0 veya daha küçük olamaz.' });
     }
 
+    // 📅 Tarih Doğrulama Katmanı (Gelecek tarihleri ve hane taşmalarını engeller)
+    const girilenTarih = new Date(son_sulama_tarihi);
+    const bugun = new Date();
+    const yil = girilenTarih.getFullYear();
+
+    // 1. Temel hane ve format kontrolü (Örn: 2027737777 gibi taşmaları önler)
+    if (isNaN(yil) || yil < 1000 || yil > 9999 || son_sulama_tarihi.split('-')[0].length !== 4) {
+        return res.status(400).json({ error: 'Geçersiz tarih formatı! Yıl 4 haneli olmalıdır.' });
+    }
+
+    // 2. Gelecek tarih kontrolü (Girilen tarih bugünden büyük olamaz)
+    const bugunISO = bugun.toISOString().split('T')[0];
+    if (son_sulama_tarihi > bugunISO) {
+        return res.status(400).json({ error: 'Son sulama tarihi gelecekte bir gün olamaz!' });
+    }
+
     let otomatikResimUrl = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500';
     const apiKey = process.env.UNSPLASH_ACCESS_KEY;
 
@@ -33,10 +49,44 @@ exports.createPlant = async (req, res) => {
         try {
             let aramaKelimesi = isim.toLowerCase().trim();
             const sozluk = {
-                'lale': 'tulip', 'orkide': 'orchid', 'deve tabanı': 'monstera',
-                'deve tabani': 'monstera', 'barış çiçeği': 'peace lily',
-                'baris cicegi': 'peace lily', 'kaktüs': 'cactus',
-                'kaktus': 'cactus', 'sukulent': 'succulent'
+            // Orijinal Bitkiler
+                'lale': 'tulip',
+                'orkide': 'orchid',
+                'deve tabanı': 'monstera',
+                'deve tabani': 'monstera',
+                'barış çiçeği': 'peace lily',
+                'baris cicegi': 'peace lily',
+                'kaktüs': 'cactus',
+                'kaktus': 'cactus',
+                'sukulent': 'succulent',
+                'menekşe': 'violet',
+                'menekse': 'violet',
+
+                // Yeni Eklenen Popüler Çiçekler ve Ev Bitkileri 🚀
+                'gül': 'rose',
+                'gul': 'rose',
+                'papatya': 'daisy',
+                'karanfil': 'carnation',
+                'ayçiçeği': 'sunflower',
+                'aycicegi': 'sunflower',
+                'lavanta': 'lavender',
+                'zambak': 'lily',
+                'yasemin': 'jasmine',
+                
+                // Popüler Ev/Balkon Bitkileri
+                'aloe vera': 'aloe vera',
+                'fesleğen': 'basil',
+                'feslegen': 'basil',
+                'nane': 'mint',
+                'biberiye': 'rosemary',
+                'paşa kılıcı': 'snake plant',
+                'pasa kilici': 'snake plant',
+                'kurdele çiçeği': 'spider plant',
+                'kurdele cicegi': 'spider plant',
+                'para ağacı': 'jade plant',
+                'para agaci': 'jade plant',
+                'sarmaşık': 'ivy',
+                'sarmasik': 'ivy'
             };
 
             let ingilizceKarsilik = sozluk[aramaKelimesi] || aramaKelimesi;
