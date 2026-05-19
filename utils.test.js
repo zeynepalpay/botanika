@@ -39,6 +39,20 @@ describe('Botanika Projesi - Fonksiyonel Unit Test Senaryoları', () => {
         });
     });
 
+    test('Sulama periyodu 0 veya negatif gelirse fonksiyon güvenli bir durum döndürmeli veya hata yönetimini tetiklemelidir', () => {
+            const bugunStr = new Date().toISOString().split('T')[0];
+            
+            // Periyot 0 verildiğinde fonksiyonun davranışını test et
+            const sonucSifir = calculatePlantStatus(bugunStr, 0);
+            // Periyot negatif (-5) verildiğinde fonksiyonun davranışını test et
+            const sonucNegatif = calculatePlantStatus(bugunStr, -5);
+
+            // Bu durumlarda kalan gün <= 0 olacağından durumun "Acil"e düşmesi 
+            // ya da sistemin çökmeden bu sınır durumunu yönetmesi beklenir
+            expect(sonucSifir.status).toBe("Acil");
+            expect(sonucNegatif.status).toBe("Acil");
+        });
+        
     // 2. BÖLÜM: Bakım butonlarından gelen kelimeleri veritabanı sütun adına çeviren fonksiyonun testleri
     describe('getColumnNameByCareType Fonksiyonu Testleri', () => {
         
