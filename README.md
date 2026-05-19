@@ -1,30 +1,29 @@
-🌿 Botanika - Akıllı Bitki Bakım Sistemi
-Botanika, bitkilerinizin bakım rutinlerini (sulama, toprak değişimi, ilaçlama, aşılama) zahmetsizce takip etmenizi sağlayan web tabanlı bir otomasyon sistemidir. Katmanlı mimari prensiplerine uygun olarak geliştirilen sistemde, iş mantığı (business logic) API rotalarından ayrıştırılarak modüler bir yapı sunulmuştur.
+# 🌿 Botanika - Akıllı Bitki Bakım Sistemi
 
-🚀 Temel Özellikler
-Akıllı Filtreleme: Bitkilerinizi "Acil", "Yaklaşanlar" ve "Sağlıklı" kategorilerine göre anında yönetin.
+**Botanika**, bitkilerinizin bakım rutinlerini zahmetsizce takip etmenizi sağlayan web tabanlı bir otomasyon sistemidir. Katmanlı mimari prensiplerine uygun olarak geliştirilmiştir.
 
-Bakım Takibi: Bitkinizin son bakım tarihini güncelleyin; sistem bir sonraki tarihi otomatik hesaplar.
+---
 
-Güvenli Yönetim: Oturum bazlı yetkilendirme ile verilerinizi koruyun.
+## 🚀 Temel Özellikler
+- **Akıllı Filtreleme:** Bitkilerinizi "Acil", "Yaklaşanlar" ve "Sağlıklı" kategorilerine göre yönetin.
+- **Bakım Takibi:** Bitkinizin son bakım tarihini güncelleyin; sistem bir sonraki tarihi hesaplar.
+- **Güvenli Yönetim:** Oturum bazlı yetkilendirme ile verilerinizi koruyun.
+- **Modüler Yapı:** Kolay genişletilebilir ve test edilebilir kod tabanı.
 
-Modüler Yapı: Test edilebilir ve genişletilebilir kod tabanı.
+---
 
-🛠️ Teknik Altyapı
-Frontend: HTML5, CSS3 (Bootstrap 5), JavaScript
+## 🛠️ Teknik Altyapı
+- **Frontend:** HTML5, CSS3 (Bootstrap 5), JavaScript
+- **Backend:** Node.js, Express.js
+- **Veritabanı:** SQLite
+- **Test:** Jest (İş mantığı doğrulamaları için)
 
-Backend: Node.js, Express.js
+---
 
-Veritabanı: SQLite
+## ⚙️ Kurulum ve Çalıştırma
 
-Test: Jest (İş mantığı doğrulamaları için)
-
-⚙️ Kurulum ve Çalıştırma
-Projeyi yerel ortamınızda ayağa kaldırmak için aşağıdaki adımları izleyin:
-
-1. Repoyu klonlayın ve klasöre gidin:
-
-Bash
+**1. Repoyu klonlayın ve klasöre gidin:**
+```bash
 git clone [repo-adresi]
 cd botanika
 2. Gerekli bağımlılıkları yükleyin:
@@ -37,8 +36,7 @@ Bash
 npm start
 Sunucu başarıyla başladığında arayüze http://localhost:3000 adresi üzerinden erişebilirsiniz.
 
-4. Testleri çalıştırma:
-İş mantığını doğrulamak için geliştirilen Jest testlerini çalıştırmak için:
+4. Testleri çalıştırın:
 
 Bash
 npm test
@@ -52,7 +50,7 @@ URL: /api/plants/:id/care
 
 Metot: PUT
 
-Yetkilendirme: Bearer Token (Oturum açılmış olmalıdır)
+Yetkilendirme: Bearer Token gereklidir.
 
 Örnek İstek (JSON):
 
@@ -61,8 +59,6 @@ JSON
   "careType": "ilac",
   "date": "2026-05-19"
 }
-(Geçerli careType parametreleri: toprak, ilac, asi)
-
 Örnek Başarılı Cevap:
 
 JSON
