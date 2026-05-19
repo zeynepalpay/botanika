@@ -41,6 +41,7 @@ REST API uç noktalarını Swagger arayüzü üzerinden test edebilir ve inceley
 
 Proje, sürdürülebilirlik ve okunabilirlik amacıyla katmanlı mimari yapısına uygun şekilde geliştirilmiştir.
 
+```text
 Botanika/
 │
 ├── config/
@@ -77,93 +78,139 @@ Botanika/
 ├── server.js
 ├── utils.js
 └── utils.test.js
+```
 
-🛡️ Güvenlik ve Veri Doğrulama
+---
+
+# 🛡️ Güvenlik ve Veri Doğrulama
 
 Botanika, kullanıcı hatalarını minimize etmek ve sistem güvenliğini sağlamak amacıyla çok katmanlı doğrulama mekanizmaları kullanmaktadır.
 
-✅ İstemci (Frontend) Doğrulaması
-HTML5 form doğrulamaları
-JavaScript tabanlı giriş kontrolleri
-Zorunlu alan kontrolü
-Tarih doğrulamaları
-✅ Sunucu (Backend) Doğrulaması
+## ✅ İstemci (Frontend) Doğrulaması
+
+- HTML5 form doğrulamaları
+- JavaScript tabanlı giriş kontrolleri
+- Zorunlu alan kontrolü
+- Tarih doğrulamaları
+
+## ✅ Sunucu (Backend) Doğrulaması
 
 Controller katmanında gelen veriler mantıksal olarak kontrol edilmektedir.
 
-Örnekler:
+### Örnekler
 
-Sulama periyodu yalnızca belirli aralıkta olabilir
-Gelecek tarihli sulama kayıtları engellenir
-Eksik veri girişleri reddedilir
-✅ API Güvenliği
+- Sulama periyodu yalnızca belirli aralıkta olabilir
+- Gelecek tarihli sulama kayıtları engellenir
+- Eksik veri girişleri reddedilir
+
+## ✅ API Güvenliği
 
 JWT tabanlı middleware sistemi sayesinde:
 
-Yetkisiz erişimler engellenir
-Korumalı endpointlere yalnızca doğrulanmış kullanıcılar erişebilir
-Geçersiz token durumlarında 403 Forbidden yanıtı döndürülür
-⚙️ Kurulum ve Çalıştırma
-1️⃣ Repoyu klonlayın
+- Yetkisiz erişimler engellenir
+- Korumalı endpointlere yalnızca doğrulanmış kullanıcılar erişebilir
+- Geçersiz token durumlarında `403 Forbidden` yanıtı döndürülür
+
+---
+
+# ⚙️ Kurulum ve Çalıştırma
+
+## 1️⃣ Repoyu klonlayın
+
+```bash
 git clone [repo-adresi]
 cd botanika
-2️⃣ Gerekli bağımlılıkları yükleyin
+```
+
+## 2️⃣ Gerekli bağımlılıkları yükleyin
+
+```bash
 npm install
-3️⃣ Sunucuyu başlatın
+```
+
+## 3️⃣ Sunucuyu başlatın
+
+```bash
 npm start
+```
 
 Sunucu başarıyla çalıştığında:
 
-🌐 Uygulama: http://localhost:3000
-📄 Swagger Dokümantasyonu: http://localhost:3000/api-docs
+- 🌐 Uygulama: `http://localhost:3000`
+- 📄 Swagger Dokümantasyonu: `http://localhost:3000/api-docs`
 
 adreslerinden erişebilirsiniz.
 
-🧪 Testler
+---
+
+# 🧪 Testler
 
 Projede unit ve entegrasyon testleri bulunmaktadır.
 
 Testleri çalıştırmak için:
 
+```bash
 npm test
+```
 
 ✅ İş mantığı testleri başarıyla çalışmaktadır.
 
-🔌 API Kullanımı
+---
+
+# 🔌 API Kullanımı
 
 Sistem, frontend ve backend arasında standart JSON formatı ile haberleşmektedir.
 
-💧 Bitki Bakım Tarihi Güncelleme
-Endpoint
+## 💧 Bitki Bakım Tarihi Güncelleme
+
+### Endpoint
+
+```http
 POST /api/plants/:id/water
-Yetkilendirme
+```
+
+### Yetkilendirme
+
 Bearer Token gereklidir.
-📥 Örnek İstek
+
+### 📥 Örnek İstek
+
+```json
 {
   "date": "2026-05-19"
 }
-📤 Örnek Başarılı Yanıt
+```
+
+### 📤 Örnek Başarılı Yanıt
+
+```json
 {
   "message": "Bitki başarıyla sulandı ve geçmişe kaydedildi."
 }
-📸 Arayüz Özellikleri
-Modern Glassmorphism tasarım
-Responsive yapı
-Durum rozetleri
-Hover animasyonları
-Dinamik kart sistemi
-Filtreleme butonları
-Modern modal ve form tasarımları
-👨‍💻 Geliştirici Notu
+```
 
-Bu proje, modern web teknolojileri kullanılarak:
+---
 
-RESTful API mimarisi
-Katmanlı yazılım mimarisi
-Güvenli kullanıcı doğrulama sistemi
-CRUD operasyonları
-Middleware yapısı
-Swagger dokümantasyonu
-Unit & entegrasyon testleri
+# 📸 Arayüz Özellikleri
 
-esas alınarak geliştirilmiştir.
+- Modern Glassmorphism tasarım
+- Responsive yapı
+- Durum rozetleri
+- Hover animasyonları
+- Dinamik kart sistemi
+- Filtreleme butonları
+- Modern modal ve form tasarımları
+
+---
+
+# 👨‍💻 Geliştirici Notu
+
+Bu proje aşağıdaki yazılım geliştirme prensipleri esas alınarak geliştirilmiştir:
+
+- RESTful API mimarisi
+- Katmanlı yazılım mimarisi
+- Güvenli kullanıcı doğrulama sistemi
+- CRUD operasyonları
+- Middleware yapısı
+- Swagger dokümantasyonu
+- Unit & entegrasyon testleri
