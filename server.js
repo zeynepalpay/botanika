@@ -1,11 +1,13 @@
-// server.js - Botanika API 
+// server.js - Botanika API Ana Giriş Noktası (Application Entry Point)
 const pathForDotenv = require('path');
 require('dotenv').config({ path: pathForDotenv.join(__dirname, '.env') });
 const express = require('express');
 const path = require('path');
-const db = require('./database');
 
-// Modüler Mimariden Çağrılan Yeni Yapılar 🚀
+// 🗄️ Veritabanı Erişim Katmanı (Model) Yeni Klasör Yoluna Göre Çağrılır
+const db = require('./models/database');
+
+// 🛠️ Yapılandırma ve Modüler Rota Katmanları (MVC)
 const { swaggerUi, swaggerDocs } = require('./config/swagger');
 const authRoutes = require('./routes/authRoutes');
 const plantRoutes = require('./routes/plantRoutes');
@@ -13,31 +15,20 @@ const plantRoutes = require('./routes/plantRoutes');
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// Global Ara Yazılımlar (Middleware)
+app.use(express.json()); // Gelen JSON istek gövdelerini (req.body) parse eder
+app.use(express.static(path.join(__dirname, 'public'))); // Frontend statik dosyalarını servis eder
 
-// 📄 Swagger API Dokümantasyonu Kapısı
+// 📄 Swagger API Dokümantasyonu Endpoint Yönetimi
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// 🌐 Modüler Rotaların Dağıtımı
-app.use('/api/auth', authRoutes);
-app.use('/api/plants', plantRoutes);
+// 🌐 MVC Modüler Rota Dağıtımı (Routing Layer)
+app.use('/api/auth', authRoutes);   // Kullanıcı kayıt ve giriş işlemleri
+app.use('/api/plants', plantRoutes); // Bitki CRUD ve bakım işlemleri
 
-// 🗄️ Veritabanı İlişkisel Tablo Kontrolü
-db.run(`CREATE TABLE IF NOT EXISTS WateringLogs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    bitki_id INTEGER,
-    sulama_tarihi TEXT,
-    FOREIGN KEY(bitki_id) REFERENCES Plants(id) ON DELETE CASCADE
-)`, (err) => {
-    if (err) {
-        console.error("❌ WateringLogs tablosu oluşturulurken hata:", err.message);
-    } else {
-        console.log("🗄️ WateringLogs tablosu hazır ve kontrol edildi.");
-    }
-});
 
-// 🚀 Sunucu Başlatma
+
+// 🚀 HTTP Sunucusunun Başlatılması
 app.listen(PORT, () => {
     console.log(`==================================================`);
     console.log(`🚀 Botanika Sunucusu kusursuz sekilde calisiyor!`);
