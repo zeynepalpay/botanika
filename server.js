@@ -1,5 +1,6 @@
 // server.js - Botanika API 
-require('dotenv').config();
+const pathForDotenv = require('path');
+require('dotenv').config({ path: pathForDotenv.join(__dirname, '.env') });
 const express = require('express');
 const path = require('path');
 const db = require('./database');

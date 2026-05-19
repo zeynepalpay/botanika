@@ -179,9 +179,14 @@ function renderPlants() {
             statusIcon = 'fa-clock';
         }
 
-       const cardHtml = `
+        // 🖼️ Eğer Unsplash'tan resim gelmediyse veya boşsa şık bir varsayılan doğa resmi gösteriyoruz
+        const bitkiResmi = plant.resim_url || 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500';
+
+        const cardHtml = `
           <div class="col">
-                <div class="card h-100 shadow-sm plant-card bg-white">
+                <div class="card h-100 shadow-sm plant-card bg-white overflow-hidden">
+                    <img src="${bitkiResmi}" alt="${plant.isim}" class="plant-card-img" style="width: 100%; height: 160px; object-fit: cover;">
+                    
                     <div class="card-body p-4 d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="card-title fw-bold text-success m-0"><i class="fa-solid fa-seedling me-2"></i>${plant.isim}</h5>

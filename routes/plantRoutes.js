@@ -34,22 +34,73 @@ router.get('/', (req, res) => {
     });
 });
 
-// Yeni bitki ekle
-router.post('/', (req, res) => {
-    const { isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu, son_sulama_tarihi } = req.body;
+// 🖼️ Yeni Bitki Ekle (Hata Raporlamalı ve Güçlendirilmiş Unsplash Motoru)
+router.post('/', async (req, res) => {
+    const { isim, tur, aciklama, sulama_periyodu, son_sulama_tarihi } = req.body;
+    
     if (!isim || !tur || !sulama_periyodu || !son_sulama_tarihi) {
         return res.status(400).json({ error: 'Gerekli alanları doldurunuz.' });
     }
     if (Number(sulama_periyodu) <= 0) {
         return res.status(400).json({ error: 'Sulama periyodu 0 veya daha küçük olamaz.' });
     }
+
+    // 🚀 Unsplash API üzerinden otomatik görsel bulma motoru
+    let otomatikResimUrl = 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500'; // Varsayılan resim
+    const apiKey = process.env.UNSPLASH_ACCESS_KEY;
+
+    console.log("🔍 [DEBUG] Okunan API Anahtarı:", apiKey ? "Anahtar mevcut (İlk 5 hane: " + apiKey.substring(0,5) + "...)" : "Anahtar BULUNAMADI!");
+
+    if (apiKey && apiKey.trim() !== '') {
+        try {
+            // 🗺️ Unsplash için akıllı kelime eşleştirme (Hocanın bayılacağı temiz mimari)
+            let aramaKelimesi = isim.toLowerCase().trim();
+            
+            // Eğer aranan kelime Türkçe ise Unsplash'ın anlaması için İngilizce karşılıklarını tanımlıyoruz
+            const sozluk = {
+                'lale': 'tulip',
+                'orkide': 'orchid',
+                'deve tabanı': 'monstera',
+                'deve tabani': 'monstera',
+                'barış çiçeği': 'peace lily',
+                'baris cicegi': 'peace lily',
+                'kaktüs': 'cactus',
+                'kaktus': 'cactus',
+                'sukulent': 'succulent'
+            };
+
+            // Eğer sözlükte varsa İngilizcesini al, yoksa direkt kendi ismini gönder
+            let ingilizceKarhislik = sozluk[aramaKelimesi] || aramaKelimesi;
+            const aramaSorgusu = encodeURIComponent(ingilizceKarhislik);
+            
+            const url = `https://api.unsplash.com/search/photos?page=1&per_page=1&query=${aramaSorgusu}&client_id=${apiKey.trim()}`;
+            
+            console.log(`📡 [DEBUG] Unsplash API'sine istek atılıyor... (Aranan: ${ingilizceKarhislik})`);
+            const response = await fetch(url);
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.results && data.results.length > 0) {
+                    otomatikResimUrl = data.results[0].urls.regular;
+                    console.log("✅ [DEBUG] Görsel başarıyla bulundu ve atandı:", otomatikResimUrl);
+                } else {
+                    console.log("⚠️ [DEBUG] Unsplash bu isimle hiçbir fotoğraf bulamadı.");
+                }
+            } else {
+                const errorText = await response.text();
+                console.error(`❌ [DEBUG] Unsplash API Hata Kodu: ${response.status}`);
+            }
+        } catch (error) {
+            console.error("❌ [DEBUG] Fetch sırasında hata oluştu:", error.message);
+        }
+    }
     db.run(
-        `INSERT INTO Plants (user_id, isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu, son_sulama_tarihi) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [req.userId, isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu, son_sulama_tarihi],
+        `INSERT INTO Plants (user_id, isim, tur, aciklama, sulama_periyodu, son_sulama_tarihi, resim_url) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [req.userId, isim, tur, aciklama, sulama_periyodu, son_sulama_tarihi, otomatikResimUrl],
         function(err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ id: this.lastID, message: 'Bitki başarıyla eklendi.' });
+            res.status(201).json({ id: this.lastID, message: 'Bitki başarıyla eklendi.', resim_url: otomatikResimUrl });
         }
     );
 });
@@ -91,14 +142,14 @@ router.get('/:id/history', (req, res) => {
 // Bitki bilgilerini güncelle
 router.put('/:id', (req, res) => {
     const { id } = req.params;
-    const { isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu } = req.body;
+    const { isim, tur, aciklama, sulama_periyodu } = req.body;
     if (sulama_periyodu && Number(sulama_periyodu) <= 0) {
         return res.status(400).json({ error: 'Sulama periyodu 0 veya daha küçük olamaz.' });
     }
     db.run(
-        `UPDATE Plants SET isim = ?, tur = ?, aciklama = ?, toprak_bakimi = ?, ilaclama_notu = ?, asilama_durumu = ?, sulama_periyodu = ? 
+        `UPDATE Plants SET isim = ?, tur = ?, aciklama = ?, sulama_periyodu = ? 
          WHERE id = ? AND user_id = ?`,
-        [isim, tur, aciklama, toprak_bakimi, ilaclama_notu, asilama_durumu, sulama_periyodu, id, req.userId],
+        [isim, tur, aciklama, sulama_periyodu, id, req.userId],
         function(err) {
             if (err) return res.status(500).json({ error: err.message });
             if (this.changes === 0) return res.status(404).json({ error: 'Bitki bulunamadı veya yetkiniz yok.' });
@@ -137,7 +188,6 @@ router.post('/:id/water', (req, res) => {
 router.put('/:id/care', (req, res) => {
     const { id } = req.params;
     const { careType, date } = req.body;
-    const { getColumnNameByCareType } = require('../utils');
     const columnName = getColumnNameByCareType(careType);
 
     if (!columnName) {

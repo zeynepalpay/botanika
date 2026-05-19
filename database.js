@@ -55,4 +55,18 @@ db.serialize(() => {
     `);
 });
 
+// Plants tablosuna resim_url kolonu yoksa otomatik ekler
+db.serialize(() => {
+    db.run(`ALTER TABLE Plants ADD COLUMN resim_url TEXT`, (err) => {
+        if (err) {
+            // Eğer kolon zaten varsa hata verecektir, sessizce geçebiliriz
+            if (!err.message.includes("duplicate column name")) {
+                console.log("Görsel kolonu kontrolü:", err.message);
+            }
+        } else {
+            console.log("🌿 Veritabanına otomatik resim_url kolonu başarıyla eklendi!");
+        }
+    });
+});
+
 module.exports = db;
