@@ -1,72 +1,492 @@
-/* public/style.css - Botanika Modern Tasarım */
+/* =========================================================
+   BOTANIKA - MODERN UI STYLE
+   ========================================================= */
+
+:root {
+    --primary: #198754;
+    --primary-light: #e8f5ee;
+
+    --danger: #dc3545;
+    --danger-light: #fde8eb;
+
+    --warning: #ffc107;
+    --warning-light: #fff9e6;
+
+    --text-dark: #2c3e50;
+    --text-light: #6c757d;
+
+    --white: rgba(255,255,255,0.88);
+
+    --shadow-soft:
+        0 10px 30px rgba(44, 62, 80, 0.06),
+        0 2px 8px rgba(44, 62, 80, 0.03);
+
+    --shadow-hover:
+        0 18px 40px rgba(44, 62, 80, 0.12),
+        0 4px 12px rgba(44, 62, 80, 0.06);
+}
+
+/* =========================================================
+   BODY
+   ========================================================= */
 
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background-color: #f3f7f4 !important;
+    background: linear-gradient(135deg, #f4f7f5 0%, #e8efe9 100%);
+    background-attachment: fixed;
+
+    min-height: 100vh;
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-dark);
+
+    margin: 0;
+    padding: 20px;
 }
 
-/* Kartların yumuşatılması ve gölgeler */
-.card {
-    border-radius: 20px !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+    width: 10px;
 }
 
-/* Üzerine gelince tatlı bir animasyonla yükselen kartlar */
-.plant-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.03) !important;
-    border-radius: 20px !important;
-    overflow: hidden;
+::-webkit-scrollbar-track {
+    background: #edf2ef;
 }
 
-.plant-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 25px rgba(25, 135, 84, 0.15) !important;
+::-webkit-scrollbar-thumb {
+    background: #c6d6cb;
+    border-radius: 20px;
 }
 
-/* Durum Rozetleri */
-.badge-acil {
-    background-color: #fde8eb !important;
-    color: #dc3545 !important;
-    border: 1px solid #fbcacc;
+::-webkit-scrollbar-thumb:hover {
+    background: #aabeb0;
 }
 
-.badge-yakin {
-    background-color: #fff9e6 !important;
-    color: #ffc107 !important;
-    border: 1px solid #ffeaa8;
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.app-header {
+    background: rgba(255,255,255,0.65);
+
+    backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255,255,255,0.4);
+
+    border-radius: 20px;
+
+    padding: 20px 28px;
+
+    margin-bottom: 28px;
+
+    box-shadow: var(--shadow-soft);
 }
 
-.badge-saglikli {
-    background-color: #e8f5e9 !important;
-    color: #198754 !important;
-    border: 1px solid #c8e6c9;
+.app-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+
+    margin: 0;
 }
 
-/* Filtreleme Butonları */
+.app-subtitle {
+    margin-top: 6px;
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+/* =========================================================
+   STATS CARDS
+   ========================================================= */
+
+.stats-card {
+    background: rgba(255,255,255,0.75);
+
+    backdrop-filter: blur(10px);
+
+    border: 1px solid rgba(255,255,255,0.4);
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    text-align: center;
+
+    box-shadow: var(--shadow-soft);
+
+    transition: all 0.25s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.stats-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-light);
+
+    margin-bottom: 12px;
+}
+
+.stats-number {
+    font-size: 2.3rem;
+    font-weight: 700;
+}
+
+.stats-green {
+    color: var(--primary);
+}
+
+.stats-red {
+    color: var(--danger);
+}
+
+.stats-yellow {
+    color: var(--warning);
+}
+
+/* =========================================================
+   FILTER BUTTONS
+   ========================================================= */
+
 .filter-btn {
-    border: 1px solid #ced4da;
+    border: 1px solid #d6ddda;
+
+    background: rgba(255,255,255,0.85);
+
     color: #495057;
-    background-color: white;
-    font-weight: 500;
+
+    padding: 10px 22px;
+
+    border-radius: 999px;
+
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
 }
 
 .filter-btn.active {
-    background-color: #198754 !important;
-    border-color: #198754 !important;
-    color: white !important;
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
-/* İkon Giriş Kutusu Düzeltmesi */
+/* =========================================================
+   PLANT CARD
+   ========================================================= */
+
+.plant-card {
+    background: var(--white);
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255,255,255,0.45);
+
+    backdrop-filter: blur(10px);
+
+    box-shadow: var(--shadow-soft);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.plant-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.plant-image {
+    position: relative;
+
+    overflow: hidden;
+
+    height: 220px;
+}
+
+.plant-image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: transform 0.45s ease;
+}
+
+.plant-card:hover .plant-image img {
+    transform: scale(1.05);
+}
+
+/* =========================================================
+   CARD CONTENT
+   ========================================================= */
+
+.plant-content {
+    padding: 22px;
+}
+
+.plant-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 10px;
+}
+
+.plant-name {
+    font-size: 1.8rem;
+    font-weight: 700;
+
+    color: var(--primary);
+}
+
+.plant-type {
+    color: var(--text-light);
+
+    margin-bottom: 14px;
+}
+
+.plant-description {
+    color: #5e6b75;
+
+    line-height: 1.6;
+
+    margin-bottom: 18px;
+}
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+.badge-status {
+    padding: 8px 14px;
+
+    border-radius: 999px;
+
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.badge-acil {
+    background: var(--danger-light);
+    color: var(--danger);
+    border: 1px solid #f8bcc4;
+}
+
+.badge-yakin {
+    background: var(--warning-light);
+    color: #c69300;
+    border: 1px solid #ffe08a;
+}
+
+.badge-saglikli {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid #cce9d6;
+}
+
+/* =========================================================
+   INFO BOX
+   ========================================================= */
+
+.info-box {
+    background: rgba(245,247,246,0.9);
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    margin-bottom: 18px;
+
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+
+    font-weight: 500;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+/* =========================================================
+   EXTRA CARE BOX
+   ========================================================= */
+
+.extra-box {
+    background: rgba(255,255,255,0.7);
+
+    border-radius: 14px;
+
+    border: 1px solid rgba(0,0,0,0.05);
+
+    overflow: hidden;
+
+    margin-bottom: 18px;
+}
+
+.extra-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 14px;
+
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.extra-item:last-child {
+    border-bottom: none;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-water {
+    background: linear-gradient(135deg, #1f9d61, #198754);
+
+    color: white;
+
+    border: none;
+
+    border-radius: 14px;
+
+    padding: 14px 22px;
+
+    font-weight: 700;
+
+    transition: all 0.2s ease;
+
+    box-shadow: 0 6px 18px rgba(25,135,84,0.25);
+}
+
+.btn-water:hover {
+    transform: translateY(-2px);
+
+    box-shadow: 0 10px 22px rgba(25,135,84,0.35);
+}
+
+.btn-icon {
+    width: 52px;
+    height: 52px;
+
+    border-radius: 50%;
+
+    border: 1px solid #dee2e6;
+
+    background: white;
+
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    transform: translateY(-2px);
+}
+
+.btn-delete {
+    color: var(--danger);
+}
+
+.btn-delete:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.form-control,
 .input-group-text {
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
+    border-radius: 12px !important;
 }
+
 .form-control {
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border: 1px solid #dbe3df;
+
+    padding: 12px 14px;
+
+    background: rgba(255,255,255,0.9);
 }
+
 .form-control:focus {
-    border-color: #198754;
-    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    border-color: var(--primary);
+
+    box-shadow: 0 0 0 0.25rem rgba(25,135,84,0.18);
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-content {
+    border-radius: 24px;
+
+    border: none;
+
+    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #1f9d61, #198754);
+
+    color: white;
+
+    border-bottom: none;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    body {
+        padding: 14px;
+    }
+
+    .app-title {
+        font-size: 1.5rem;
+    }
+
+    .plant-name {
+        font-size: 1.4rem;
+    }
+
+    .stats-number {
+        font-size: 1.8rem;
+    }
+
+    .plant-image {
+        height: 180px;
+    }
 }
