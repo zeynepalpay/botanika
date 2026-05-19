@@ -145,6 +145,7 @@ async function fetchPlants() {
 }
 
 function renderPlants() {
+    console.log("Bitki Verileri:", allPlants);
     plantsContainer.innerHTML = '';
 
     const totalCount = allPlants.length;
@@ -155,11 +156,20 @@ function renderPlants() {
     document.getElementById('dashAcil').innerText = acilCount;
     document.getElementById('dashSaglikli').innerText = saglikliCount;
     
-    const filteredPlants = allPlants.filter(plant => {
-        if (currentFilter === 'Tümü') return true;
-        if (currentFilter === 'Yakin') return plant.durum === 'Yakın';
-        return plant.durum === currentFilter;
-    });
+ const filteredPlants = allPlants.filter(plant => {
+    if (currentFilter === 'Tümü') return true;
+
+    // Verideki ve aranan durumdaki olası 'ı'/'i' farkını yok ediyoruz
+    const pDurum = plant.durum ? plant.durum.trim().toLowerCase().replace('ı', 'i') : '';
+    const fDurum = currentFilter.trim().toLowerCase().replace('ı', 'i');
+
+    // Eğer filtre 'Yaklaşanlar' veya 'Yakin' ise, 'yakin' durumunu ara
+    if (fDurum === 'yaklaşanlar' || fDurum === 'yakin') {
+        return pDurum === 'yakin';
+    }
+
+    return pDurum === fDurum;
+});
 
     plantCount.innerText = filteredPlants.length;
 
